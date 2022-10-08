@@ -1,0 +1,19 @@
+{
+    "name": "jlgomes/swapi-php",
+    "description": "Projeto utilizado para simplificar a utilização da API do Starwars(SWAPI)",
+    "authors": [
+        {
+            "name": "Jonas Gomes",
+            "email": "jonasbenti@hotmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Jlgomes\\Swapi\\": "src/"
+        }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "^7.5",
+        "netresearch/jsonmapper": "^4.0"
+    }
+}
