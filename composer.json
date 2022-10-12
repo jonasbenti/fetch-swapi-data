@@ -22,6 +22,7 @@
         }
     },
     "require": {
+        "php": ">=8.0",
         "guzzlehttp/guzzle": "^7.5",
         "netresearch/jsonmapper": "^4.0"
     }

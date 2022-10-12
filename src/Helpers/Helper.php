@@ -49,7 +49,7 @@ class Helper
      * @param string $entityType - films, people, vehicles, planets, starships, species
      * @return ModelMap
      */
-    private static function getModel(string $entityType): ModelMap|string
+    private static function getModel(string $entityType): ModelMap
     {
         return match (strtolower($entityType)) {
             Helper::FILMS => new Film(),
@@ -58,7 +58,7 @@ class Helper
             Helper::PLANETS => new Planet(),
             Helper::STARSHIPS => new Starship(),
             Helper::SPECIES => new Specie(),
-            default => $entityType
+            default => throw new \UnexpectedValueException("Error entity($entityType) not found")
         };
     }
 
@@ -71,13 +71,16 @@ class Helper
     public static function getModelAndIdByUrl(string $url): array
     {
         if (preg_match("/\/api\/(\w+)\/(\d+)(\/|$)/", $url, $matches) !== false) {
-            error_log(print_r($matches, 1));
-            $data = [
+            if (!$matches) {
+                throw new \UnexpectedValueException("Error entity or identifier not found in url($url)");
+            }
+
+            return [
                 'model' => static::getModel($matches[1]),
                 'id' => $matches[2]
             ];
         }
 
-        return $data ?: [];
+        throw new \UnexpectedValueException("error when searching in url($url)");
     }
 }
