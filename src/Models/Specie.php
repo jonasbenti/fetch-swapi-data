@@ -20,15 +20,4 @@ class Specie extends ModelMap
     public ?\DateTime $created = null;
     public ?\DateTime $edited = null;
     public string $url = "";
-    // public function __construct(
-    //     int $id,
-    //     \DateTime $created,
-    //     string $url,
-    //     public string $name,
-    //     public string $homeworld = "",
-    //     public array $films = [],
-    //     public array $vehicles = []
-    // ) {
-    //     parent::__construct($id, $created, $url);
-    // }
 }

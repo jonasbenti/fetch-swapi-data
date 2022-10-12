@@ -12,10 +12,17 @@ class Endpoint
     public function __construct(
         protected Client $http,
         protected JsonMapper $mapper,
-        protected string $entityType
-    ) {}
+        protected string $url
+    ) {
+    }
 
-    public function setClient(Client $http)
+    /**
+     * Altera as informacoes do client http
+     *
+     * @param Client $http
+     * @return void
+     */
+    public function setClient(Client $http): void
     {
         $this->http = $http;
     }
@@ -25,53 +32,71 @@ class Endpoint
      * @param ModelMap $modelInstance
      * @return ModelMap
      */
-    protected function hydrateOne(object $data, ModelMap $modelInstance): ModelMap
+    public function hydrateOne(object $data, ModelMap $modelInstance): ModelMap
     {
         return $this->mapper->map($data, $modelInstance);
     }
 
     /**
-     * Busca as informacoes de acordo com o id passado por parametro
-     * e o tipo de entidade (ex: people, films) definido no construtor da classe
+     * Busca as informacoes de acordo com a url
      *
-     * @param int $id
+     * @param string $url
      * @return ModelMap
      */
-    public function getObjById(int $id): ModelMap
+    private function getObj(string $url): ModelMap
     {
-        try {
-            $response = $this->http->request("GET", "{$this->entityType}/{$id}/");
-            $obj = json_decode($response->getBody());
-            $obj->id = $id;
-            $model = Helper::getModel($this->entityType);
+        $dataUrl = Helper::getModelAndIdByUrl($url);
 
-            return $this->hydrateOne($obj, $model);
-        } catch (\UnexpectedValueException $e) {
-            die($e->getMessage() . $e->getTraceAsString());
-        } catch (\Exception $e) {
-            die($e->getMessage() . $e->getTraceAsString());
+        if (!is_object($dataUrl['model']) ) {
+            throw new \UnexpectedValueException("Error model ({$dataUrl['model']}) not exists");
         }
+
+        $response = $this->http->request("GET", $url);
+        $obj = json_decode($response->getBody());
+        $obj->id = $dataUrl['id'];
+
+        return $this->hydrateOne($obj, $dataUrl['model']);
     }
 
-    // /**
-    //  * Busca as informacoes de acordo com a url
-    //  *
-    //  * @param int $url
-    //  * @return ModelMap
-    //  */
-    // public function getObjByUrl(string $url): ModelMap
-    // {
-    //     try {
-    //         $response = $this->http->request("GET", $url);
-    //         $obj = json_decode($response->getBody());
-    //         $obj->id = $id;
-    //         $model = Helper::getModel($this->entityType);
+    /**
+     * Busca os dados na API e com a opcao de exibir informacoes do registro filho
+     * e informacoes de registro que possuem uma url
+     *
+     * @param string $url
+     * @param bool $displayChildData - Informa se deve retornar todos os atributos da URL ou apenas o id, name|title, url
+     * @return array
+     */
+    public function getHidrateDataByUrl(string $url, bool $displayChildData = false): array
+    {
+        $obj = $this->getObj($url);
+        $array = [];
 
-    //         return $this->hydrateOne($obj, $model);
-    //     } catch (\UnexpectedValueException $e) {
-    //         die($e->getMessage() . $e->getTraceAsString());
-    //     } catch (\Exception $e) {
-    //         die($e->getMessage() . $e->getTraceAsString());
-    //     }
-    // }
+        foreach ($obj as $key => $value) {
+            // Verifica se eh um valor do tipo DateTime
+            if (is_object($value) && get_class($value) === "DateTime" && $value) {
+                $array[$key] = $value->format('Y-m-d h:i:s');
+                continue;
+            }
+
+            if ($displayChildData) {
+                // verifica se o atributo <> url possui uma url(exemplo: homeworld)
+                if (!is_array($value) && $key !== 'url' && str_starts_with($value, Helper::API_URL)) {
+                    $array[$key] = $this->getHidrateDataByUrl($value);
+                    continue;
+                }
+
+                // Se for um dos atributos definidos na classe Helper itera todos os itens do array
+                if (in_array($key, Helper::getAllConstantsAttributeWithUrl()) && $value) {
+                    foreach ($value as $childKey => $url) {
+                        $array[$key][$childKey] = $this->getHidrateDataByUrl($url);
+                    }
+                    continue;
+                }
+            }
+
+            $array[$key] = $value;
+        }
+
+        return $array;
+    }
 }

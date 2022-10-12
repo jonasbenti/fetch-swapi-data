@@ -18,9 +18,4 @@ class Film extends ModelMap {
     public ?\DateTime $created = null;
     public ?\DateTime $edited = null;
     public string $url = "";
-
-    public static function getNameClass(): string
-    {
-        return __CLASS__;
-    }
 }

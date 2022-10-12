@@ -12,7 +12,7 @@ use Jlgomes\Swapi\Models\Vehicle;
 
 class Helper
 {
-    const API_URL = 'http://swapi.dev/api/';
+    const API_URL = 'https://swapi.dev/api/';
     const FILMS = "films";
     const PEOPLE = "people";
     const PLANETS = "planets";
@@ -49,7 +49,7 @@ class Helper
      * @param string $entityType - films, people, vehicles, planets, starships, species
      * @return ModelMap
      */
-    public static function getModel(string $entityType): ModelMap
+    private static function getModel(string $entityType): ModelMap|string
     {
         return match (strtolower($entityType)) {
             Helper::FILMS => new Film(),
@@ -58,7 +58,26 @@ class Helper
             Helper::PLANETS => new Planet(),
             Helper::STARSHIPS => new Starship(),
             Helper::SPECIES => new Specie(),
-            default => throw new \UnexpectedValueException("Error entity type ($entityType) not found")
+            default => $entityType
         };
+    }
+
+    /**
+     * Retorna qual a entidade e o id que esta na url
+     *
+     * @param string $url
+     * @return array
+     */
+    public static function getModelAndIdByUrl(string $url): array
+    {
+        if (preg_match("/\/api\/(\w+)\/(\d+)(\/|$)/", $url, $matches) !== false) {
+            error_log(print_r($matches, 1));
+            $data = [
+                'model' => static::getModel($matches[1]),
+                'id' => $matches[2]
+            ];
+        }
+
+        return $data ?: [];
     }
 }
