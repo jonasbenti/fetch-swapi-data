@@ -1,10 +1,19 @@
 {
     "name": "jlgomes/swapi-php",
-    "description": "Projeto utilizado para simplificar a utilização da API do Starwars(SWAPI)",
+    "description": "Projeto utilizado para simplificar a utilização da API do Starwars(SWAPI), utilizando pela url ou entidade+id",
+    "keywords": [
+        "http",
+        "rest",
+        "client",
+        "HTTP client",
+        "SWAPI"
+    ],
+    "license": "MIT",
     "authors": [
         {
             "name": "Jonas Gomes",
-            "email": "jonasbenti@hotmail.com"
+            "email": "jonasbenti@hotmail.com",
+            "homepage": "https://jonasbenti.github.io/"
         }
     ],
     "autoload": {
